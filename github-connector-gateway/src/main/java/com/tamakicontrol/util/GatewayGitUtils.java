@@ -1,12 +1,16 @@
-package com.tamakicontrol;
+package com.tamakicontrol.util;
 
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
+import com.tamakicontrol.config.GitSettingsRecord;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,24 +18,26 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class GatewayGitUtilProvider extends AbstractGitUtilProvider {
+public class GatewayGitUtils extends AbstractGitUtilProvider {
 
-    private static Logger logger = LoggerFactory.getLogger(GatewayGitUtilProvider.class);
+    private static Logger logger = LoggerFactory.getLogger(GatewayGitUtils.class);
 
     private GatewayContext context;
     private Repository repo;
     private Git git;
 
-    public GatewayGitUtilProvider(GatewayContext context){
+    public GatewayGitUtils(GatewayContext context){
         this.context = context;
     }
 
     private File getProjectDir(){
         String dataDirectory = context.getSystemManager().getDataDir().getAbsolutePath();
-        return new File(String.format("%s/projects", dataDirectory));
+        String projectDir = String.format("%s/projects/.git", dataDirectory);
+        logger.info(projectDir);
+        return new File(projectDir);
     }
 
-    private void init(){
+    public void init(){
         try {
             repo = FileRepositoryBuilder.create(getProjectDir());
             git = new Git(repo);
@@ -40,12 +46,27 @@ public class GatewayGitUtilProvider extends AbstractGitUtilProvider {
         }
     }
 
-    private void load(){
+    public void load(){
         try{
-            repo = new FileRepositoryBuilder().setGitDir(getProjectDir()).build();
+            repo = new FileRepositoryBuilder()
+                    .setGitDir(getProjectDir())
+                    .readEnvironment()
+                    .findGitDir()
+                    .setMustExist(true)
+                    .build();
+
             git = new Git(repo);
         }catch (IOException e){
             logger.error("Exception thrown while loading git repo", e);
+        }
+    }
+
+    public String getCurrentBranch(){
+        try {
+            return git.getRepository().getBranch();
+        }catch (IOException e){
+            logger.error("Exception thrown while getting current branch", e);
+            return null;
         }
     }
 
@@ -69,21 +90,22 @@ public class GatewayGitUtilProvider extends AbstractGitUtilProvider {
     }
 
     @Override
-    protected void commitImpl() {
+    protected void commitImpl(String message, String author, String email) {
         try {
-            CommitCommand commitCommand = git.commit();
-            commitCommand.setAuthor("cwarren", "cody@tamaki.co.nz");
-            commitCommand.setMessage("");
-            commitCommand.call();
+            git.commit().setAuthor(author, email)
+                        .setMessage(message)
+                        .setAll(true)
+                        .call();
+
         }catch (GitAPIException e){
             logger.error("Error thrown during commit", e);
         }
-
     }
 
     private void setRemote(){
         try {
             StoredConfig config = git.getRepository().getConfig();
+            // TODO obviously not this either
             config.setString("remote", "origin", "url", "http://github.com/user/repo");
             config.save();
         }catch (IOException e){
@@ -104,12 +126,19 @@ public class GatewayGitUtilProvider extends AbstractGitUtilProvider {
     @Override
     protected void pushImpl() {
         try {
-            PushCommand pushCommand = git.push();
-            pushCommand.call();
+
+            GitSettingsRecord settings = context.getPersistenceInterface().find(GitSettingsRecord.META, 0L);
+            CredentialsProvider credentials = new UsernamePasswordCredentialsProvider(
+                    settings.getUsername(), settings.getPassword());
+
+            Iterable<PushResult> results  = git.push().setRemote("origin")
+                    .setCredentialsProvider(credentials)
+                    .call();
+
+            logger.info(String.format("Pushed commits to origin.  %s", results.toString()));
         }catch (GitAPIException e ){
             logger.error("Error thrown during push", e);
         }
-
     }
 
     @Override

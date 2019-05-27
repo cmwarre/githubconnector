@@ -1,8 +1,8 @@
-package com.tamakicontrol;
+package com.tamakicontrol.util;
 
 public interface GitUtilProvider {
 
-    void commit();
+    void commit(String message, String author, String email);
 
     void pull();
 

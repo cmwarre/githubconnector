@@ -1,13 +1,13 @@
-package com.tamakicontrol;
+package com.tamakicontrol.util;
 
 public abstract class AbstractGitUtilProvider implements GitUtilProvider {
 
     @Override
-    public void commit() {
-        commitImpl();
+    public void commit(String message, String author, String email) {
+        commitImpl(message, author, email);
     }
 
-    protected abstract void commitImpl();
+    protected abstract void commitImpl(String message, String author, String email);
 
     @Override
     public void pull() {
