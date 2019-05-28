@@ -3,7 +3,6 @@ This module will connect Ignition projects to git so that users can commit/pull/
 
 
 ## TODO
-* Automatically Create Git Repo on Module Start
 * Choose Which Projects are included in the git repo
 * Add ability to have git repo per project?
 * Show branches in designer menu

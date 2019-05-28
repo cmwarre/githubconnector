@@ -2,15 +2,19 @@ package com.tamakicontrol.designer.util;
 
 import com.inductiveautomation.factorypmi.application.script.builtin.ClientUserUtilities;
 import com.inductiveautomation.factorypmi.application.script.builtin.SecurityUtilities;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
 import com.inductiveautomation.ignition.common.user.ContactInfo;
 import com.inductiveautomation.ignition.common.user.ContactType;
 import com.inductiveautomation.ignition.common.user.User;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.tamakicontrol.GitException;
 import com.tamakicontrol.util.AbstractGitUtilProvider;
 import com.tamakicontrol.util.GitUtilProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class DesignerGitUtils extends AbstractGitUtilProvider {
 
@@ -32,7 +36,7 @@ public class DesignerGitUtils extends AbstractGitUtilProvider {
 
     /**
      *
-     * getUserInfo
+     * getContactInfo
      *
      * @author Cody Warren
      * @since May 23, 2019
@@ -59,6 +63,32 @@ public class DesignerGitUtils extends AbstractGitUtilProvider {
         commitImpl(message, SecurityUtilities.getUsername(), getContactInfo());
     }
 
+
+    @Override
+    protected void addImpl(String filePath) throws Exception {
+        rpc.add(filePath);
+    }
+
+    @Override
+    public String getCurrentBranchImpl() throws Exception{
+        return rpc.getCurrentBranch();
+    }
+
+    @Override
+    protected void addBranchImpl(String name) throws Exception {
+        rpc.addBranch(name);
+    }
+
+    @Override
+    protected void renameBranchImpl(String name, String newName) throws Exception {
+        rpc.renameBranch(name, newName);
+    }
+
+    @Override
+    protected void removeBranchImpl(String name) throws Exception  {
+        rpc.removeBranch(name);
+    }
+
     /**
      *
      * commitImpl
@@ -68,27 +98,31 @@ public class DesignerGitUtils extends AbstractGitUtilProvider {
      *
      * Commit the current project to git.
      *
-     * TODO add support for username/email/messages
-     *
      * */
     @Override
-    protected void commitImpl(String message, String author, String email) {
+    protected void commitImpl(String message, String author, String email) throws Exception {
         rpc.commit(message, author, email);
     }
 
     @Override
-    protected void pullImpl() {
+    protected void pullImpl() throws Exception {
         rpc.pull();
     }
 
     @Override
-    protected void pushImpl() {
+    protected void pushImpl() throws Exception {
         rpc.push();
     }
 
     @Override
-    protected void checkoutImpl(String branch) {
+    protected void checkoutImpl(String branch) throws GitException {
         rpc.checkout(branch);
+    }
+
+
+    @Override
+    protected List<String> getBranchesImpl() throws Exception {
+        return rpc.getBranches();
     }
 
 }

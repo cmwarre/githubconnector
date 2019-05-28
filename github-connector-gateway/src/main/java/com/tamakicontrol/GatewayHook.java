@@ -35,7 +35,7 @@ public class GatewayHook extends AbstractGatewayModuleHook {
         maybeCreateGitSettings(gatewayContext);
 
         gitUtils = new GatewayGitUtils(gatewayContext);
-        gitUtils.load(); // loads local repository
+        initOrLoadGitRepo(gitUtils);
     }
 
     @Override
@@ -57,6 +57,14 @@ public class GatewayHook extends AbstractGatewayModuleHook {
     public Object getRPCHandler(ClientReqSession session, String projectName) {
         super.getRPCHandler(session, projectName);
         return gitUtils;
+    }
+
+
+    private void initOrLoadGitRepo(GatewayGitUtils gitUtils){
+        if(gitUtils.getGitDir().exists())
+            gitUtils.load();
+        else
+            gitUtils.init();
     }
 
     /*
