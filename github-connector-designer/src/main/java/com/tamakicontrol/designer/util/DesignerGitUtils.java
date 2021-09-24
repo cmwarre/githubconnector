@@ -1,9 +1,8 @@
 package com.tamakicontrol.designer.util;
 
-import com.inductiveautomation.factorypmi.application.script.builtin.ClientUserUtilities;
-import com.inductiveautomation.factorypmi.application.script.builtin.SecurityUtilities;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.gateway_interface.ModuleRPCFactory;
+import com.inductiveautomation.ignition.client.script.ClientSecurityUtilities;
+import com.inductiveautomation.ignition.client.script.ClientUserUtilities;
 import com.inductiveautomation.ignition.common.user.ContactInfo;
 import com.inductiveautomation.ignition.common.user.ContactType;
 import com.inductiveautomation.ignition.common.user.User;
@@ -23,32 +22,20 @@ public class DesignerGitUtils extends AbstractGitUtilProvider {
     private final GitUtilProvider rpc;
     private final DesignerContext context;
 
-
-    /**
-     *
-     *
-     *
-     * */
     public DesignerGitUtils(DesignerContext context){
         rpc = ModuleRPCFactory.create("com.tamakicontrol.github-connector", GitUtilProvider.class);
         this.context = context;
     }
 
     /**
-     *
-     * getContactInfo
-     *
-     * @author Cody Warren
-     * @since May 23, 2019
-     *
-     * Fetches current username and contact info to use in commits
-     *
+     * @return Fetches current username and contact info to use in commits
      * */
     private String getContactInfo() throws Exception {
         ClientUserUtilities userUtils = new ClientUserUtilities();
-        User user = userUtils.getUser(context.getAuthProfileName(), SecurityUtilities.getUsername());
+        User user = userUtils.getUser(context.getAuthProfileName(), ClientSecurityUtilities.getUsername());
 
         String email = "";
+
         for(ContactInfo contact : user.getContactInfo()){
             if(ContactType.EMAIL.equals(contact.getContactType())){
                 email = contact.getValue();
@@ -60,9 +47,8 @@ public class DesignerGitUtils extends AbstractGitUtilProvider {
     }
 
     public void commit(String message) throws Exception {
-        commitImpl(message, SecurityUtilities.getUsername(), getContactInfo());
+        commitImpl(message, ClientSecurityUtilities.getUsername(), getContactInfo());
     }
-
 
     @Override
     protected void addImpl(String filePath) throws Exception {
@@ -125,4 +111,23 @@ public class DesignerGitUtils extends AbstractGitUtilProvider {
         return rpc.getBranches();
     }
 
+    @Override
+    protected void mergeImpl() throws Exception {
+        rpc.merge();
+    }
+
+    @Override
+    protected void rebaseImpl() throws Exception {
+        rpc.rebase();
+    }
+
+    @Override
+    protected void resetImpl() throws Exception {
+        rpc.reset();
+    }
+
+    @Override
+    protected void pullRequestImpl(String title, String message) throws Exception {
+        rpc.pullRequest(title, message);
+    }
 }

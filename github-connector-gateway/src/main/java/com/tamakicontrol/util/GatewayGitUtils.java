@@ -17,7 +17,6 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,7 +85,6 @@ public class GatewayGitUtils extends AbstractGitUtilProvider {
         }
     }
 
-    @Nonnull
     private List<Ref> listBranches() throws Exception {
         try {
             return git.branchList().call();
@@ -254,4 +252,32 @@ public class GatewayGitUtils extends AbstractGitUtilProvider {
 
     }
 
+    @Override
+    protected void mergeImpl() throws GitException {
+        try {
+            MergeCommand mergeCommand = git.merge();
+            MergeResult result = mergeCommand.call();
+            logger.debug(String.format("Merge complete: %s", result.toString()));
+        }catch (CheckoutConflictException e){
+            throw new GitException(e, e.getConflictingPaths());
+        }catch(GitAPIException e){
+            logger.error("Exception thrown during checkout", e);
+            throw new GitException(e);
+        }
+    }
+
+    @Override
+    protected void rebaseImpl() throws GitException {
+        // todo
+    }
+
+    @Override
+    protected void resetImpl() throws GitException {
+        // todo
+    }
+
+    @Override
+    protected void pullRequestImpl(String title, String message) throws Exception {
+        //todo
+    }
 }

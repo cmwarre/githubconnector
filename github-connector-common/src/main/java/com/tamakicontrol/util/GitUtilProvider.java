@@ -22,6 +22,14 @@ public interface GitUtilProvider {
 
     void push() throws Exception;
 
+    void merge() throws Exception;
+
+    void rebase() throws Exception;
+
+    void reset() throws Exception;
+
+    void pullRequest(String title, String message) throws Exception;
+
     void checkout(String branch) throws GitException;
 
     List<String> getBranches() throws Exception;

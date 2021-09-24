@@ -76,4 +76,33 @@ public abstract class AbstractGitUtilProvider implements GitUtilProvider {
 
     protected abstract List<String> getBranchesImpl() throws Exception;
 
+    @Override
+    public void merge() throws Exception {
+        mergeImpl();
+    }
+
+    protected abstract void mergeImpl() throws Exception;
+
+    @Override
+    public void rebase() throws Exception {
+        rebaseImpl();
+    }
+
+    protected abstract void rebaseImpl() throws Exception;
+
+    @Override
+    public void reset() throws Exception {
+        resetImpl();
+    }
+
+    protected abstract void resetImpl() throws Exception;
+
+    @Override
+    public void pullRequest(String title, String message) throws Exception {
+        pullRequestImpl(title, message);
+    }
+
+    protected abstract void pullRequestImpl(String title, String message) throws Exception;
+
+
 }

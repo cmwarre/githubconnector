@@ -35,13 +35,21 @@
             <plugin>
                 <groupId>com.inductiveautomation.ignitionsdk</groupId>
                 <artifactId>ignition-maven-plugin</artifactId>
-                <version>1.1.0</version>
+                <version>1.1.1-SNAPSHOT</version>
 
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
                             <goal>modl</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>post-module</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>modl</goal>
+                            <goal>post</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -66,7 +74,7 @@
                     <moduleName>${project.parent.name}</moduleName>
                     <moduleDescription>${project.description}</moduleDescription>
                     <moduleVersion>1.0.0-SNAPSHOT</moduleVersion>
-                    <requiredIgnitionVersion>8.0.0</requiredIgnitionVersion>
+                    <requiredIgnitionVersion>8.1.0</requiredIgnitionVersion>
                     <licenseFile>license.html</licenseFile>
                     <documentationFile>doc/index.html</documentationFile>
 
@@ -80,6 +88,8 @@
                             <hookClass>com.tamakicontrol.GatewayHook</hookClass>
                         </hook>
                     </hooks>
+
+                    <gatewayAddress>http://192.168.10.115:8088</gatewayAddress>
 
                 </configuration>
             </plugin>
